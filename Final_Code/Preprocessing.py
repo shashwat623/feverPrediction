@@ -57,23 +57,15 @@ dt = load_obj('med_dt')
 
 # Preprocessing
 def process1(demo_df, drugdt, ui):
-    demo_df = demo_df[['vitalperiodicid', 'patientunitstayid', 'observationoffset', 'temperature', 'sao2', 'heartrate', 'respiration', 'cvp', 'systemicsystolic', 'systemicdiastolic', 'systemicmean']]
-    demo_df[['vitalperiodicid','patientunitstayid', 'observationoffset']] = demo_df[['vitalperiodicid','patientunitstayid', 'observationoffset']].astype('int32')
-    demo_df[['temperature','sao2', 'heartrate', 'respiration','cvp', 'systemicsystolic', 'systemicdiastolic', 'systemicmean']] = demo_df[['temperature','sao2', 'heartrate', 'respiration','cvp', 'systemicsystolic', 'systemicdiastolic', 'systemicmean']].astype('float32')
+    demo_df=demo_df.astype({'vitalperiodicid':'int32', 'patientunitstayid':'int32', 'observationoffset':'int32', 'temperature':'float32', 'sao2':'float32', 'heartrate':'float32', 'respiration':'float32', 'cvp':'float32', 'systemicsystolic':'float32', 'systemicdiastolic':'float32', 'systemicmean':'float32'})     
     
-
+    temp=demo_df.dropna(subset=['temperature'])
+    # feverdf will contain "patientunitstayid" if patient has fever
+    feverdf=temp.loc[temp['temperature']>=38, "patientunitstayid"]
     
+    feverpid = feverdf.unique()
     
-     
-    temp = demo_df.dropna(subset=['temperature'])[['vitalperiodicid', 'patientunitstayid', 'observationoffset', 'temperature', 'sao2', 'heartrate', 'respiration', 'cvp', 'systemicsystolic', 'systemicdiastolic', 'systemicmean']]
-    
-    feverdf = copy.copy(temp)
-    feverdf['temperature'] = feverdf['temperature'].apply(lambda x: np.nan if x<38.0 else x)
-    feverdf = feverdf.dropna(subset=['temperature'])[['patientunitstayid']]
-    
-    feverpid = feverdf.patientunitstayid.unique()
-    
-    pospid = temp.patientunitstayid.unique()
+    pospid = demo_df.patientunitstayid.unique()
     
     volume = len(temp.patientunitstayid.unique())
     #Removing those pid who does not have any fever data.
